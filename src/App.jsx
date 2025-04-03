@@ -1,35 +1,59 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState } from "react";
+import axios from "axios";
 
-function App() {
-  const [count, setCount] = useState(0)
+const API_KEY = "25dbdfc62593ed95eed2942b88484c22"; // Replace with your OpenWeatherMap API key
+const API_URL = "https://api.openweathermap.org/data/2.5/weather";
+
+export default function App() {
+  const [city, setCity] = useState("");
+  const [weather, setWeather] = useState(null);
+
+  const fetchWeather = async () => {
+    if (!city) return;
+    try {
+      const response = await axios.get(API_URL, {
+        params: {
+          q: city,
+          appid: API_KEY,
+          units: "metric",
+        },
+      });
+      setWeather(response.data);
+    } catch (error) {
+      alert("City not found!");
+      setWeather(null);
+    }
+  };
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
+    <div className="flex flex-col items-center justify-center min-h-screen bg-white text-black ">
+      <div className="border-2 border-black p-18 rounded-4xl bg-amber-300 m-4">
+        <h1 className="text-3xl font-bold mb-4">Weather App</h1>
+        <input
+          type="text"
+          placeholder="Enter city"
+          className="p-2 text-black rounded bg-gray-300"
+          value={city}
+          onChange={(e) => setCity(e.target.value)}
+        />
+        <button
+          className="mt-2 px-4 py-2 bg-blue-500 rounded"
+          onClick={fetchWeather}
+        >
+          Get Weather
         </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
-}
 
-export default App
+        {weather && (
+          <div className="mt-4 bg-red-200 p-4 rounded-2xl border-2">
+            <h2 className="text-2xl">
+              {weather.name}, {weather.sys.country}
+            </h2>
+            <p className="text-lg">🌡 {weather.main.temp}°C</p>
+            <p>☁ {weather.weather[0].description}</p>
+            <p>💨 Wind: {weather.wind.speed} m/s</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
